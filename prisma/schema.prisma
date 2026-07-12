@@ -1,0 +1,278 @@
+// The Kitchen Veendam — data model
+//
+// Runs on Supabase Postgres (see DATABASE_URL/DIRECT_URL in .env). Fields
+// that could be native Postgres enums are still plain Strings validated by
+// Zod unions in code (see src/lib/validation) — carried over from the
+// original SQLite-based schema, which had no native enum support.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Auth (Auth.js / NextAuth Prisma adapter models)
+// ---------------------------------------------------------------------------
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ---------------------------------------------------------------------------
+// Users & roles
+// ---------------------------------------------------------------------------
+
+/// Fixed set of system roles. Seeded once; not user-creatable via the UI.
+/// key is one of: OWNER | MANAGER | STAFF | KITCHEN | GUEST
+model Role {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  label       String
+  permissions Json // string[] of dashboard section keys this role can access
+  users       User[]
+  createdAt   DateTime @default(now())
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  image        String?
+  roleId       String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  role     Role      @relation(fields: [roleId], references: [id])
+  accounts Account[]
+  sessions Session[]
+}
+
+// ---------------------------------------------------------------------------
+// CRM
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id                String    @id @default(cuid())
+  name              String
+  email             String    @unique
+  phone             String?
+  visits            Int       @default(0)
+  favoriteTableId   String?
+  lastReservationAt DateTime?
+  notes             String?
+  vip               Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  favoriteTable Table?        @relation(fields: [favoriteTableId], references: [id])
+  reservations  Reservation[]
+}
+
+// ---------------------------------------------------------------------------
+// Reservations & tables
+// ---------------------------------------------------------------------------
+
+/// status: vrij | gereserveerd | bezet | schoonmaken | onderhoud
+model Table {
+  id        String   @id @default(cuid())
+  number    Int      @unique
+  capacity  Int
+  zone      String // binnen | terras
+  status    String   @default("vrij")
+  posX      Float    @default(0)
+  posY      Float    @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  reservations Reservation[]
+  favoritedBy  Customer[]
+}
+
+/// status: pending | confirmed | cancelled | completed
+/// occasion: verjaardag | zakelijk | bbq | null
+model Reservation {
+  id         String   @id @default(cuid())
+  customerId String
+  tableId    String?
+  date       DateTime // calendar date (time component ignored)
+  time       String // "19:00"
+  partySize  Int
+  location   String // binnen | terras
+  wheelchair Boolean  @default(false)
+  highChair  Boolean  @default(false)
+  occasion   String?
+  notes      String?
+  status     String   @default("pending")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id])
+  table    Table?   @relation(fields: [tableId], references: [id])
+
+  @@index([date, time])
+  @@index([tableId, date, time])
+}
+
+// ---------------------------------------------------------------------------
+// Menu
+// ---------------------------------------------------------------------------
+
+model MenuCategory {
+  id        String     @id @default(cuid())
+  key       String     @unique
+  label     String
+  emoji     String
+  sortOrder Int        @default(0)
+  items     MenuItem[]
+}
+
+model Allergen {
+  id    String     @id @default(cuid())
+  name  String     @unique
+  items MenuItem[]
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String
+  ingredients String? // comma-separated, free text
+  price       Float
+  priceIsFrom Boolean  @default(false) // true renders "vanaf €X" (e.g. drinks)
+  image       String
+  categoryId  String
+  spicyLevel  Int?
+  vegetarian  Boolean  @default(false)
+  chefsChoice Boolean  @default(false)
+  soldOut     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  category  MenuCategory @relation(fields: [categoryId], references: [id])
+  allergens Allergen[]
+}
+
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+model Event {
+  id          String    @id @default(cuid())
+  name        String
+  description String
+  schedule    String // human-readable recurrence, e.g. "Elke vrijdag"
+  date        DateTime?
+  price       String
+  image       String
+  maxGuests   Int?
+  ticketsSold Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// Gift cards
+// ---------------------------------------------------------------------------
+
+/// status: active | redeemed | expired
+model GiftCard {
+  id             String    @id @default(cuid())
+  code           String    @unique
+  amount         Float
+  balance        Float
+  qrData         String
+  purchaserName  String
+  purchaserEmail String
+  recipientName  String?
+  recipientEmail String?
+  message        String?
+  status         String    @default("active")
+  createdAt      DateTime  @default(now())
+  expiresAt      DateTime?
+}
+
+// ---------------------------------------------------------------------------
+// Reviews, gallery, newsletter, opening hours, settings
+// ---------------------------------------------------------------------------
+
+/// source: google | site
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  rating    Int
+  text      String
+  source    String   @default("site")
+  approved  Boolean  @default(false)
+  date      DateTime @default(now())
+  createdAt DateTime @default(now())
+}
+
+model GalleryImage {
+  id        String   @id @default(cuid())
+  url       String
+  alt       String
+  category  String
+  width     Int      @default(1200) // captured from the optimized upload; drives masonry sizing
+  height    Int      @default(900)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model NewsletterSubscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  active       Boolean  @default(true)
+  subscribedAt DateTime @default(now())
+}
+
+model OpeningHour {
+  id        String  @id @default(cuid())
+  dayOfWeek Int     @unique // 0 = Sunday ... 6 = Saturday
+  openTime  String?
+  closeTime String?
+  closed    Boolean @default(false)
+}
+
+model Setting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String // JSON-encoded value
+}
