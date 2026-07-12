@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
@@ -9,6 +8,7 @@ import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DASHBOARD_NAV, type NavItem } from "@/lib/dashboard-nav";
 import type { DashboardSection } from "@/lib/permissions";
+import { Logo } from "@/components/site/logo";
 
 type SidebarProps = {
   /**
@@ -60,14 +60,14 @@ export function Sidebar({ allowedKeys }: SidebarProps) {
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-white/[0.06] bg-[#0a0a0a] lg:flex">
         <div className="flex h-20 items-center border-b border-white/[0.06] px-6">
-          <Image src="/logo-gold.png" alt="The Kitchen Veendam" width={1630} height={965} className="h-9 w-auto" />
+          <Logo imgClassName="h-6 w-auto" />
         </div>
         <NavLinks items={items} pathname={pathname} />
       </aside>
 
       {/* Mobile top bar trigger */}
       <div className="fixed inset-x-0 top-0 z-40 flex h-16 items-center justify-between border-b border-white/[0.06] bg-[#0a0a0a] px-4 lg:hidden">
-        <Image src="/logo-gold.png" alt="The Kitchen Veendam" width={1630} height={965} className="h-8 w-auto" />
+        <Logo imgClassName="h-5 w-auto" />
         <button
           type="button"
           aria-label="Menu"
@@ -96,7 +96,7 @@ export function Sidebar({ allowedKeys }: SidebarProps) {
               className="flex h-full w-72 flex-col border-r border-white/[0.06] bg-[#0a0a0a]"
             >
               <div className="flex h-16 items-center justify-between border-b border-white/[0.06] px-5">
-                <Image src="/logo-gold.png" alt="The Kitchen Veendam" width={1630} height={965} className="h-8 w-auto" />
+                <Logo imgClassName="h-5 w-auto" />
                 <button
                   type="button"
                   aria-label="Sluiten"

@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CtaButton } from "./cta-button";
+import { Logo } from "./logo";
 
 const NAV_LINKS = [
   { label: "Menukaart", href: "/menu" },
@@ -47,14 +47,7 @@ export function Navbar() {
     >
       <div className="section-container flex h-20 items-center justify-between">
         <Link href="/" className="flex items-center">
-          <Image
-            src="/logo-gold.png"
-            alt="The Kitchen Veendam"
-            width={1630}
-            height={965}
-            priority
-            className="h-12 w-auto sm:h-16"
-          />
+          <Logo imgClassName="h-9 w-auto sm:h-12" priority />
         </Link>
 
         <nav className="hidden items-center gap-5 xl:gap-6 lg:flex">

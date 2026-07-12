@@ -1,24 +1,18 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Clock, Mail, MapPin, Phone, Send } from "lucide-react";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "./social-icons";
 import { OPENING_HOURS, RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { Logo } from "./logo";
 
 export function Footer() {
   return (
     <footer id="contact" className="relative border-t border-white/[0.06] bg-[#0a0a0a]">
       <div className="section-container grid grid-cols-1 gap-12 py-20 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <Image
-            src="/logo-gold.png"
-            alt="The Kitchen Veendam"
-            width={1630}
-            height={965}
-            className="h-16 w-auto"
-          />
+          <Logo imgClassName="h-12 w-auto" />
           <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/55">
             De plek voor een heerlijke lunch, diner, drankje of BBQ.
             Gezelligheid, kwaliteit en gastvrijheid staan bij ons centraal.

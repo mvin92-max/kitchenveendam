@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { Suspense } from "react";
 import { LoginForm } from "@/components/auth/login-form";
+import { Logo } from "@/components/site/logo";
 
 export const metadata: Metadata = {
   title: "Inloggen | The Kitchen Veendam",
@@ -16,13 +16,7 @@ export default function LoginPage() {
 
       <div className="relative z-10 w-full max-w-md rounded-3xl border border-white/[0.08] bg-kitchen-card/80 p-8 shadow-[0_30px_80px_-20px_rgba(0,0,0,0.9)] backdrop-blur-xl sm:p-10">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Image
-            src="/logo-gold.png"
-            alt="The Kitchen Veendam"
-            width={1630}
-            height={965}
-            className="h-12 w-auto"
-          />
+          <Logo imgClassName="h-9 w-auto" />
           <p className="mt-4 text-sm font-semibold uppercase tracking-[0.3em] text-kitchen-gold">
             Personeel
           </p>

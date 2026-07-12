@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { motion } from "framer-motion";
 import { Sparkles } from "lucide-react";
+import { Logo } from "@/components/site/logo";
 
 export function GiftCardPreview({ amount }: { amount: string }) {
   return (
@@ -27,7 +27,7 @@ export function GiftCardPreview({ amount }: { amount: string }) {
 
       <div className="relative flex h-full flex-col justify-between">
         <div className="flex items-start justify-between">
-          <Image src="/logo-gold.png" alt="The Kitchen Veendam" width={200} height={118} className="h-9 w-auto" />
+          <Logo imgClassName="h-6 w-auto" />
           <Sparkles className="text-kitchen-gold" size={22} />
         </div>
 
