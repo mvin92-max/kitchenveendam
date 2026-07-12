@@ -32,6 +32,7 @@ export const DASHBOARD_SECTIONS = [
   "cadeaubonnen",
   "openingstijden",
   "klanten",
+  "personeel",
   "reviews",
   "nieuws",
   "instellingen",
@@ -45,8 +46,8 @@ const ALL_SECTIONS: DashboardSection[] = [...DASHBOARD_SECTIONS];
 export const ROLE_PERMISSIONS: Record<RoleKey, DashboardSection[]> = {
   OWNER: ALL_SECTIONS,
   MANAGER: ALL_SECTIONS.filter((s) => s !== "instellingen"),
-  STAFF: ["dashboard", "reserveringen", "tafels", "klanten", "cadeaubonnen"],
-  KITCHEN: ["dashboard", "menukaart"],
+  STAFF: ["dashboard", "reserveringen", "tafels", "klanten", "cadeaubonnen", "personeel"],
+  KITCHEN: ["dashboard", "menukaart", "personeel"],
   // Gast has no back-office access; logging in only grants a public-site
   // account context (own reservations/gift cards), not the staff dashboard.
   GUEST: [],

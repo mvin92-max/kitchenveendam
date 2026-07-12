@@ -309,6 +309,88 @@ async function seedCustomersAndReservations() {
   }
 }
 
+async function seedPersoneel() {
+  const staffUser = await prisma.user.findUnique({ where: { email: DEMO_USERS.STAFF.email } });
+  const kitchenUser = await prisma.user.findUnique({ where: { email: DEMO_USERS.KITCHEN.email } });
+
+  const roster: {
+    name: string;
+    position: string;
+    phone?: string;
+    email?: string;
+    contractHours?: number;
+    userId?: string;
+  }[] = [
+    { name: staffUser!.name, position: "Bediening", contractHours: 32, userId: staffUser!.id },
+    { name: kitchenUser!.name, position: "Keuken", contractHours: 36, userId: kitchenUser!.id },
+    { name: "Lisa de Groot", position: "Bediening", phone: "06-23456789", contractHours: 16 },
+    { name: "Youssef El Amrani", position: "Bar", phone: "06-34567890", contractHours: 12 },
+    { name: "Nina Kramer", position: "Keuken", phone: "06-45678901", contractHours: 24 },
+    { name: "Bram Oosting", position: "Schoonmaak", phone: "06-56789012", contractHours: 8 },
+  ];
+
+  const employeeByName = new Map<string, string>();
+  for (const person of roster) {
+    const existing = await prisma.employee.findFirst({ where: { name: person.name } });
+    if (existing) {
+      employeeByName.set(person.name, existing.id);
+      continue;
+    }
+    const created = await prisma.employee.create({
+      data: {
+        name: person.name,
+        position: person.position,
+        phone: person.phone ?? null,
+        email: person.email ?? null,
+        contractHours: person.contractHours ?? null,
+        userId: person.userId ?? null,
+      },
+    });
+    employeeByName.set(person.name, created.id);
+  }
+
+  // A representative week of shifts, anchored to *this* week so the roster
+  // always looks populated regardless of when seed runs.
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const monday = new Date(today);
+  const day = monday.getDay();
+  monday.setDate(monday.getDate() + (day === 0 ? -6 : 1 - day));
+
+  function dateFor(offsetFromMonday: number) {
+    const d = new Date(monday);
+    d.setDate(d.getDate() + offsetFromMonday);
+    return d;
+  }
+
+  const shiftPlan: { name: string; offset: number; startTime: string; endTime: string; position: string }[] = [
+    { name: staffUser!.name, offset: 0, startTime: "17:00", endTime: "23:00", position: "Bediening" },
+    { name: staffUser!.name, offset: 2, startTime: "17:00", endTime: "23:00", position: "Bediening" },
+    { name: staffUser!.name, offset: 4, startTime: "16:00", endTime: "23:30", position: "Bediening" },
+    { name: kitchenUser!.name, offset: 1, startTime: "11:00", endTime: "19:00", position: "Keuken" },
+    { name: kitchenUser!.name, offset: 3, startTime: "11:00", endTime: "19:00", position: "Keuken" },
+    { name: kitchenUser!.name, offset: 5, startTime: "11:00", endTime: "22:00", position: "Keuken" },
+    { name: "Lisa de Groot", offset: 4, startTime: "17:00", endTime: "22:00", position: "Bediening" },
+    { name: "Lisa de Groot", offset: 5, startTime: "12:00", endTime: "18:00", position: "Bediening" },
+    { name: "Youssef El Amrani", offset: 4, startTime: "18:00", endTime: "01:00", position: "Bar" },
+    { name: "Youssef El Amrani", offset: 5, startTime: "18:00", endTime: "01:00", position: "Bar" },
+    { name: "Nina Kramer", offset: 0, startTime: "11:00", endTime: "17:00", position: "Keuken" },
+    { name: "Nina Kramer", offset: 6, startTime: "12:00", endTime: "20:00", position: "Keuken" },
+    { name: "Bram Oosting", offset: 1, startTime: "09:00", endTime: "13:00", position: "Schoonmaak" },
+  ];
+
+  for (const s of shiftPlan) {
+    const employeeId = employeeByName.get(s.name);
+    if (!employeeId) continue;
+    const date = dateFor(s.offset);
+    const existing = await prisma.shift.findFirst({ where: { employeeId, date, startTime: s.startTime } });
+    if (existing) continue;
+    await prisma.shift.create({
+      data: { employeeId, date, startTime: s.startTime, endTime: s.endTime, position: s.position },
+    });
+  }
+}
+
 async function main() {
   console.log("Seeding database...");
   await seedRolesAndUsers();
@@ -320,6 +402,7 @@ async function main() {
   await seedReviews();
   await seedEvents();
   await seedCustomersAndReservations();
+  await seedPersoneel();
   console.log("\nSeed compleet.");
 }
 

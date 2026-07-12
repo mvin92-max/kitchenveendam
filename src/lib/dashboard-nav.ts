@@ -1,6 +1,7 @@
 import {
   BarChart3,
   Calendar,
+  CalendarClock,
   Gift,
   Grid3x3,
   Image as ImageIcon,
@@ -33,6 +34,7 @@ export const DASHBOARD_NAV: NavItem[] = [
   { key: "cadeaubonnen", label: "Cadeaubonnen", href: "/dashboard/cadeaubonnen", icon: Gift },
   { key: "openingstijden", label: "Openingstijden", href: "/dashboard/openingstijden", icon: Calendar },
   { key: "klanten", label: "Klanten", href: "/dashboard/klanten", icon: Users },
+  { key: "personeel", label: "Personeel", href: "/dashboard/personeel", icon: CalendarClock },
   { key: "reviews", label: "Reviews", href: "/dashboard/reviews", icon: Star },
   { key: "nieuws", label: "Nieuws", href: "/dashboard/nieuws", icon: Newspaper },
   { key: "statistieken", label: "Statistieken", href: "/dashboard/statistieken", icon: BarChart3 },
