@@ -11,6 +11,10 @@ export const metadata: Metadata = {
     "Reserveer eenvoudig online een tafel bij The Kitchen Veendam voor lunch, diner of BBQ.",
 };
 
+// InfoPanel + the footer both read opening hours live from the database, so
+// this page can't be statically prerendered — dashboard edits must appear immediately.
+export const revalidate = 0;
+
 export default function ReserverenPage() {
   return (
     <>

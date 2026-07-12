@@ -9,6 +9,10 @@ import { InstagramGallery } from "@/components/site/instagram-gallery";
 import { FinalCta } from "@/components/site/final-cta";
 import { Footer } from "@/components/site/footer";
 
+// The footer reads opening hours live from the database, so this page can't
+// be statically prerendered — edits in het dashboard must appear immediately.
+export const revalidate = 0;
+
 export default function Home() {
   return (
     <>

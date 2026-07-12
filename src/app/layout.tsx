@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Poppins } from "next/font/google";
 import "./globals.css";
 import { RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { buildOpeningHoursSpecification } from "@/lib/format-hours";
+import { prisma } from "@/lib/prisma";
 
 const playfair = Playfair_Display({
   variable: "--font-playfair",
@@ -50,45 +52,36 @@ export const metadata: Metadata = {
   },
 };
 
-const restaurantSchema = {
-  "@context": "https://schema.org",
-  "@type": "Restaurant",
-  "@id": `${SITE_URL}/#restaurant`,
-  name: SITE_NAME,
-  url: SITE_URL,
-  image: OG_IMAGE,
-  telephone: RESTAURANT_ADDRESS.phone.replace(/\s|-/g, ""),
-  email: RESTAURANT_ADDRESS.email,
-  priceRange: "€€",
-  servesCuisine: ["Grill", "BBQ", "Steakhouse", "Nederlands"],
-  acceptsReservations: true,
-  menu: `${SITE_URL}/menu`,
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: RESTAURANT_ADDRESS.street,
-    postalCode: RESTAURANT_ADDRESS.postalCity.split(" ").slice(0, 2).join(" "),
-    addressLocality: "Veendam",
-    addressCountry: "NL",
-  },
-  openingHoursSpecification: [
-    // Maandag gesloten — bewust weggelaten (afwezigheid van een dag betekent gesloten)
-    {
-      "@type": "OpeningHoursSpecification",
-      dayOfWeek: ["Tuesday", "Wednesday", "Thursday"],
-      opens: "11:00",
-      closes: "22:00",
-    },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: "Friday", opens: "11:00", closes: "23:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: "Saturday", opens: "11:00", closes: "23:00" },
-    { "@type": "OpeningHoursSpecification", dayOfWeek: "Sunday", opens: "12:00", closes: "22:00" },
-  ],
-};
-
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const hourRecords = await prisma.openingHour.findMany();
+
+  const restaurantSchema = {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "@id": `${SITE_URL}/#restaurant`,
+    name: SITE_NAME,
+    url: SITE_URL,
+    image: OG_IMAGE,
+    telephone: RESTAURANT_ADDRESS.phone.replace(/\s|-/g, ""),
+    email: RESTAURANT_ADDRESS.email,
+    priceRange: "€€",
+    servesCuisine: ["Grill", "BBQ", "Steakhouse", "Nederlands"],
+    acceptsReservations: true,
+    menu: `${SITE_URL}/menu`,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: RESTAURANT_ADDRESS.street,
+      postalCode: RESTAURANT_ADDRESS.postalCity.split(" ").slice(0, 2).join(" "),
+      addressLocality: "Veendam",
+      addressCountry: "NL",
+    },
+    openingHoursSpecification: buildOpeningHoursSpecification(hourRecords),
+  };
+
   return (
     <html
       lang="nl"

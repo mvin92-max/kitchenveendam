@@ -1,13 +1,23 @@
-"use client";
-
 import Link from "next/link";
-import { motion } from "framer-motion";
-import { Clock, Mail, MapPin, Phone, Send } from "lucide-react";
+import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "./social-icons";
-import { OPENING_HOURS, RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { dayLabel, formatHoursRange, orderRowsMondayFirst } from "@/lib/format-hours";
+import { prisma } from "@/lib/prisma";
 import { Logo } from "./logo";
+import { NewsletterForm } from "./newsletter-form";
 
-export function Footer() {
+export async function Footer() {
+  const [hourRecords, upcomingExceptions] = await Promise.all([
+    prisma.openingHour.findMany(),
+    prisma.openingHourException.findMany({
+      where: { date: { gte: new Date(new Date().toDateString()) } },
+      orderBy: { date: "asc" },
+      take: 3,
+    }),
+  ]);
+  const hours = orderRowsMondayFirst(hourRecords);
+
   return (
     <footer id="contact" className="relative border-t border-white/[0.06] bg-[#0a0a0a]">
       <div className="section-container grid grid-cols-1 gap-12 py-20 sm:grid-cols-2 lg:grid-cols-4">
@@ -40,19 +50,29 @@ export function Footer() {
             Openingstijden
           </h3>
           <ul className="flex flex-col gap-3">
-            {OPENING_HOURS.map((row) => (
+            {hours.map((row) => (
               <li
-                key={row.day}
+                key={row.dayOfWeek}
                 className="flex items-start justify-between gap-4 text-sm text-white/60"
               >
                 <span className="flex items-center gap-2">
                   <Clock size={14} className="mt-0.5 shrink-0 text-kitchen-gold" />
-                  {row.day}
+                  {dayLabel(row.dayOfWeek)}
                 </span>
-                <span className="whitespace-nowrap text-white/80">{row.time}</span>
+                <span className="whitespace-nowrap text-white/80">{formatHoursRange(row)}</span>
               </li>
             ))}
           </ul>
+          {upcomingExceptions.length > 0 && (
+            <ul className="mt-4 flex flex-col gap-1.5 border-t border-white/[0.06] pt-4">
+              {upcomingExceptions.map((e) => (
+                <li key={e.id} className="text-xs text-kitchen-gold/80">
+                  {e.date.toLocaleDateString("nl-NL", { day: "numeric", month: "long" })} — {e.label}:{" "}
+                  {e.closed ? "gesloten" : `${e.openTime} - ${e.closeTime}`}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         <div>
@@ -95,26 +115,7 @@ export function Footer() {
           <p className="mb-4 text-sm leading-relaxed text-white/55">
             Blijf op de hoogte van nieuwe gerechten, arrangementen en events.
           </p>
-          <form
-            className="flex items-center gap-2"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <input
-              type="email"
-              required
-              placeholder="Je e-mailadres"
-              className="h-11 w-full min-w-0 rounded-full border border-white/15 bg-white/[0.03] px-4 text-sm text-white placeholder:text-white/40 outline-none transition-colors focus:border-kitchen-gold/60"
-            />
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="submit"
-              aria-label="Aanmelden"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-kitchen-red text-white transition-colors hover:bg-[#8f1010]"
-            >
-              <Send size={16} />
-            </motion.button>
-          </form>
+          <NewsletterForm />
         </div>
       </div>
 

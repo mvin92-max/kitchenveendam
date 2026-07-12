@@ -20,6 +20,10 @@ export const metadata: Metadata = {
   },
 };
 
+// The footer reads opening hours live from the database, so this page can't
+// be statically prerendered — edits in het dashboard must appear immediately.
+export const revalidate = 0;
+
 export default function OverOnsPage() {
   return (
     <>

@@ -312,6 +312,18 @@ model OpeningHour {
   closed    Boolean @default(false)
 }
 
+/// A one-off deviation from the regular weekly schedule — a holiday closure
+/// or special hours on a specific calendar date (e.g. Oudjaarsavond).
+model OpeningHourException {
+  id        String   @id @default(cuid())
+  date      DateTime @unique // calendar date; time of day ignored
+  label     String
+  closed    Boolean  @default(true)
+  openTime  String?
+  closeTime String?
+  createdAt DateTime @default(now())
+}
+
 model Setting {
   id    String @id @default(cuid())
   key   String @unique

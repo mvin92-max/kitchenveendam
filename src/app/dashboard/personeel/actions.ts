@@ -101,7 +101,9 @@ export async function createShiftAction(input: unknown): Promise<ActionResult> {
   await prisma.shift.create({
     data: {
       employeeId: data.employeeId,
-      date: new Date(`${data.date}T00:00:00`),
+      // Bare "YYYY-MM-DD" parses as UTC midnight; appending a local-time
+      // suffix like "T00:00:00" would shift the date in non-UTC timezones.
+      date: new Date(data.date),
       startTime: data.startTime,
       endTime: data.endTime,
       position: data.position,
@@ -126,7 +128,9 @@ export async function updateShiftAction(id: string, input: unknown): Promise<Act
     where: { id },
     data: {
       employeeId: data.employeeId,
-      date: new Date(`${data.date}T00:00:00`),
+      // Bare "YYYY-MM-DD" parses as UTC midnight; appending a local-time
+      // suffix like "T00:00:00" would shift the date in non-UTC timezones.
+      date: new Date(data.date),
       startTime: data.startTime,
       endTime: data.endTime,
       position: data.position,

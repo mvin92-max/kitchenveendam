@@ -13,6 +13,10 @@ export const metadata: Metadata = {
     "Geef een culinaire beleving cadeau met een digitale of fysieke cadeaubon van The Kitchen Veendam.",
 };
 
+// The footer reads opening hours live from the database, so this page can't
+// be statically prerendered — edits in het dashboard must appear immediately.
+export const revalidate = 0;
+
 export default function CadeaubonnenPage() {
   return (
     <>

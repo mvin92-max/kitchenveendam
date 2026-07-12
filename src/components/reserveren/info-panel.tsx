@@ -1,8 +1,13 @@
 import Image from "next/image";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
-import { OPENING_HOURS, RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
+import { dayLabel, formatHoursRange, orderRowsMondayFirst } from "@/lib/format-hours";
+import { prisma } from "@/lib/prisma";
 
-export function InfoPanel() {
+export async function InfoPanel() {
+  const hourRecords = await prisma.openingHour.findMany();
+  const hours = orderRowsMondayFirst(hourRecords);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="relative aspect-[4/3] w-full overflow-hidden rounded-3xl border border-white/10 shadow-[0_25px_60px_-20px_rgba(0,0,0,0.9)]">
@@ -22,13 +27,13 @@ export function InfoPanel() {
           Openingstijden
         </h3>
         <ul className="flex flex-col gap-3">
-          {OPENING_HOURS.map((row) => (
+          {hours.map((row) => (
             <li
-              key={row.day}
+              key={row.dayOfWeek}
               className="flex items-center justify-between gap-4 text-sm text-white/60"
             >
-              <span>{row.day}</span>
-              <span className="whitespace-nowrap text-white/80">{row.time}</span>
+              <span>{dayLabel(row.dayOfWeek)}</span>
+              <span className="whitespace-nowrap text-white/80">{formatHoursRange(row)}</span>
             </li>
           ))}
         </ul>
