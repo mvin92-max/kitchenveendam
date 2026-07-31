@@ -12,10 +12,20 @@ import { sectionFromPath } from "@/lib/dashboard-nav";
 const { auth } = NextAuth(authConfig);
 
 /**
- * Fast, optimistic gate for every `/dashboard/*` request: redirects logged-out
- * or under-permissioned users before the page even renders. Next.js
- * deliberately scopes Proxy to "optimistic checks" only (see their auth
- * guide) — the authoritative check is the `await auth()` call in
+ * Site-wide "coming soon" toggle: while false, every public-facing page is
+ * transparently swapped for `/onderhoud` (the dashboard and login keep
+ * working normally, so building/testing behind the scenes is unaffected).
+ * Flip to true at launch.
+ */
+const PUBLIC_SITE_LIVE = false;
+
+/**
+ * Fast, optimistic gate for every request: redirects logged-out or
+ * under-permissioned users away from `/dashboard/*` before the page even
+ * renders, and (while `PUBLIC_SITE_LIVE` is false) rewrites every public
+ * route to the maintenance page. Next.js deliberately scopes Proxy to
+ * "optimistic checks" only (see their auth guide) — the authoritative check
+ * for dashboard access is the `await auth()` call in
  * `src/app/dashboard/layout.tsx`, which re-verifies on every request this
  * proxy lets through.
  */
@@ -23,20 +33,30 @@ export const proxy = auth((req) => {
   const { pathname } = req.nextUrl;
   const session = req.auth;
 
-  if (!session?.user) {
-    const loginUrl = new URL("/login", req.nextUrl.origin);
-    loginUrl.searchParams.set("callbackUrl", pathname);
-    return NextResponse.redirect(loginUrl);
+  if (pathname.startsWith("/dashboard")) {
+    if (!session?.user) {
+      const loginUrl = new URL("/login", req.nextUrl.origin);
+      loginUrl.searchParams.set("callbackUrl", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    const section = sectionFromPath(pathname);
+    if (section && !canAccessSection(session.user.role, section)) {
+      return NextResponse.redirect(new URL("/dashboard/geen-toegang", req.nextUrl.origin));
+    }
+
+    return NextResponse.next();
   }
 
-  const section = sectionFromPath(pathname);
-  if (section && !canAccessSection(session.user.role, section)) {
-    return NextResponse.redirect(new URL("/dashboard/geen-toegang", req.nextUrl.origin));
+  const isLogin = pathname === "/login";
+  const isMaintenancePage = pathname === "/onderhoud";
+  if (!PUBLIC_SITE_LIVE && !isLogin && !isMaintenancePage) {
+    return NextResponse.rewrite(new URL("/onderhoud", req.nextUrl.origin));
   }
 
   return NextResponse.next();
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*"],
+  matcher: ["/((?!api|_next/static|_next/image|.*\\.(?:png|svg|jpg|jpeg|ico|txt|xml)$).*)"],
 };
