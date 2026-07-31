@@ -111,9 +111,9 @@ async function seedOpeningHours() {
 async function seedSettings() {
   const settings: Record<string, unknown> = {
     restaurant_name: "The Kitchen Veendam",
-    address: "Beneden Oostersdiep 123, 9641 LD Veendam",
+    address: "Prins Hendrikplein 5, 9641 GJ Veendam",
     phone: "0598 - 123 456",
-    email: "info@thekitchenveendam.nl",
+    email: "info@kitchenveendam.nl",
     average_spend_per_guest: 32.5,
   };
   for (const [key, value] of Object.entries(settings)) {

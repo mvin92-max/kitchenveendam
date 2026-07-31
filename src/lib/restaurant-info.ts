@@ -3,7 +3,7 @@ export const RESTAURANT_ADDRESS = {
   postalCity: "9641 GJ Veendam",
   phone: "0598 - 123 456",
   phoneHref: "tel:0598123456",
-  email: "info@thekitchenveendam.nl",
+  email: "info@kitchenveendam.nl",
   mapsQuery: "Prins Hendrikplein 5 Veendam",
 };
 
