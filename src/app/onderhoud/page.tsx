@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { Mail, Phone } from "lucide-react";
+import Link from "next/link";
+import { Mail, Briefcase } from "lucide-react";
 import { Logo } from "@/components/site/logo";
 import { RESTAURANT_ADDRESS } from "@/lib/restaurant-info";
 import { FacebookIcon, InstagramIcon, TikTokIcon } from "@/components/site/social-icons";
@@ -25,20 +26,23 @@ export default function OnderhoudPage() {
           Onze nieuwe website is bijna klaar
         </h1>
         <p className="mt-4 text-sm leading-relaxed text-white/60 sm:text-base">
-          Meer informatie over The Kitchen Veendam volgt binnenkort. Voor vragen of reserveringen kun je ons
-          intussen gewoon bereiken.
+          Meer informatie over The Kitchen Veendam volgt binnenkort. Voor vragen kun je ons intussen mailen.
         </p>
 
         <div className="mt-8 flex flex-col items-center gap-3 text-sm text-white/70">
-          <a href={RESTAURANT_ADDRESS.phoneHref} className="flex items-center gap-2 hover:text-white">
-            <Phone size={15} className="text-kitchen-gold" />
-            {RESTAURANT_ADDRESS.phone}
-          </a>
           <a href={`mailto:${RESTAURANT_ADDRESS.email}`} className="flex items-center gap-2 hover:text-white">
             <Mail size={15} className="text-kitchen-gold" />
             {RESTAURANT_ADDRESS.email}
           </a>
         </div>
+
+        <Link
+          href="/solliciteren"
+          className="mt-6 flex h-12 items-center gap-2 rounded-full bg-kitchen-red px-7 text-sm font-medium uppercase tracking-wide text-white transition-all hover:bg-[#8f1010]"
+        >
+          <Briefcase size={16} />
+          Solliciteer bij ons
+        </Link>
 
         <div className="mt-8 flex gap-3">
           {[

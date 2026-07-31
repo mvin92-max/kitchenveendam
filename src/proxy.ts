@@ -48,9 +48,10 @@ export const proxy = auth((req) => {
     return NextResponse.next();
   }
 
-  const isLogin = pathname === "/login";
-  const isMaintenancePage = pathname === "/onderhoud";
-  if (!PUBLIC_SITE_LIVE && !isLogin && !isMaintenancePage) {
+  // Pages that stay reachable even while the rest of the public site shows
+  // the maintenance placeholder.
+  const isExempt = pathname === "/login" || pathname === "/onderhoud" || pathname === "/solliciteren";
+  if (!PUBLIC_SITE_LIVE && !isExempt) {
     return NextResponse.rewrite(new URL("/onderhoud", req.nextUrl.origin));
   }
 
