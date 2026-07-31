@@ -31,7 +31,7 @@ const prisma = new PrismaClient({ adapter });
 const DEMO_PASSWORD = "kitchen123";
 
 const DEMO_USERS: Record<RoleKey, { name: string; email: string }> = {
-  OWNER: { name: "Mark Bruinsma", email: "eigenaar@thekitchenveendam.nl" },
+  OWNER: { name: "Joost Verhoeven", email: "eigenaar@thekitchenveendam.nl" },
   MANAGER: { name: "Iris Kamphuis", email: "manager@thekitchenveendam.nl" },
   STAFF: { name: "Tom Veldkamp", email: "medewerker@thekitchenveendam.nl" },
   KITCHEN: { name: "Daan Hoekstra", email: "keuken@thekitchenveendam.nl" },

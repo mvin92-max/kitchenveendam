@@ -9,7 +9,7 @@ export type TeamMember = {
 export const TEAM_MEMBERS: TeamMember[] = [
   {
     id: "eigenaar",
-    name: "Mark Bruinsma",
+    name: "Joost Verhoeven",
     role: "Eigenaar",
     bio: "Runt The Kitchen Veendam met passie voor gastvrijheid en een neus voor kwaliteit.",
     image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80",
