@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Mail, MapPin, ChefHat } from "lucide-react";
 import { Logo } from "@/components/site/logo";
-import { RESTAURANT_ADDRESS, OPEN_VACANCIES } from "@/lib/restaurant-info";
+import { RESTAURANT_ADDRESS, OPEN_VACANCIES, VACANCY_EMAIL } from "@/lib/restaurant-info";
 
 export const metadata: Metadata = {
   title: "Solliciteren | The Kitchen Veendam",
@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default function SolliciterenPage() {
-  const mailtoHref = `mailto:${RESTAURANT_ADDRESS.email}?subject=${encodeURIComponent("Sollicitatie The Kitchen Veendam")}`;
+  const mailtoHref = `mailto:${VACANCY_EMAIL}?subject=${encodeURIComponent("Sollicitatie The Kitchen Veendam")}`;
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#111111] px-6 py-16 text-center">

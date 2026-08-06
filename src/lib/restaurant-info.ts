@@ -8,3 +8,6 @@ export const RESTAURANT_ADDRESS = {
 };
 
 export const OPEN_VACANCIES = ["Chef kok", "Chef de partie", "Afwashulp", "Bediening", "Barman/barvrouw", "Gastheer/gastvrouw", "Assistent-manager"];
+
+/** Dedicated inbox for job applications, separate from the general contact address. */
+export const VACANCY_EMAIL = "aanvraag@thekitchenveendam.nl";
