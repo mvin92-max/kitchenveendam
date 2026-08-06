@@ -329,3 +329,17 @@ model Setting {
   key   String @unique
   value String // JSON-encoded value
 }
+
+/// A submission from the public /solliciteren form. Always both emailed to
+/// the vacancy inbox and stored here, so nothing gets lost even if a mail
+/// bounces or lands in spam.
+model JobApplication {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  positions String[] // one or more of OPEN_VACANCIES
+  message   String?
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}

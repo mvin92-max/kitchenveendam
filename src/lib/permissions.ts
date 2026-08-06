@@ -33,6 +33,7 @@ export const DASHBOARD_SECTIONS = [
   "openingstijden",
   "klanten",
   "personeel",
+  "sollicitaties",
   "reviews",
   "nieuws",
   "instellingen",
