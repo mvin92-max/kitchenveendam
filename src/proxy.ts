@@ -20,17 +20,27 @@ const { auth } = NextAuth(authConfig);
 const PUBLIC_SITE_LIVE = false;
 
 /**
+ * Lets someone who knows this token browse the real site while
+ * `PUBLIC_SITE_LIVE` is still false — visit any page once with
+ * `?preview=<this value>` and a cookie remembers it for a month, without
+ * exposing the site to regular visitors. Not a security boundary, just a
+ * "don't index/share this yet" gate.
+ */
+const PREVIEW_SECRET = "O3C45svEhMQnZfVt";
+const PREVIEW_COOKIE = "kv_preview";
+
+/**
  * Fast, optimistic gate for every request: redirects logged-out or
  * under-permissioned users away from `/dashboard/*` before the page even
  * renders, and (while `PUBLIC_SITE_LIVE` is false) rewrites every public
- * route to the maintenance page. Next.js deliberately scopes Proxy to
- * "optimistic checks" only (see their auth guide) — the authoritative check
- * for dashboard access is the `await auth()` call in
- * `src/app/dashboard/layout.tsx`, which re-verifies on every request this
- * proxy lets through.
+ * route to the maintenance page unless the preview cookie/token is present.
+ * Next.js deliberately scopes Proxy to "optimistic checks" only (see their
+ * auth guide) — the authoritative check for dashboard access is the
+ * `await auth()` call in `src/app/dashboard/layout.tsx`, which re-verifies
+ * on every request this proxy lets through.
  */
 export const proxy = auth((req) => {
-  const { pathname } = req.nextUrl;
+  const { pathname, searchParams } = req.nextUrl;
   const session = req.auth;
 
   if (pathname.startsWith("/dashboard")) {
@@ -48,14 +58,27 @@ export const proxy = auth((req) => {
     return NextResponse.next();
   }
 
+  const previewToken = searchParams.get("preview");
+  const hasPreviewCookie = req.cookies.get(PREVIEW_COOKIE)?.value === PREVIEW_SECRET;
+  const isPreview = previewToken === PREVIEW_SECRET || hasPreviewCookie;
+
   // Pages that stay reachable even while the rest of the public site shows
   // the maintenance placeholder.
   const isExempt = pathname === "/login" || pathname === "/onderhoud" || pathname === "/solliciteren";
-  if (!PUBLIC_SITE_LIVE && !isExempt) {
+
+  if (!PUBLIC_SITE_LIVE && !isExempt && !isPreview) {
     return NextResponse.rewrite(new URL("/onderhoud", req.nextUrl.origin));
   }
 
-  return NextResponse.next();
+  const response = NextResponse.next();
+  if (previewToken === PREVIEW_SECRET && !hasPreviewCookie) {
+    response.cookies.set(PREVIEW_COOKIE, PREVIEW_SECRET, {
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: "lax",
+    });
+  }
+  return response;
 });
 
 export const config = {
