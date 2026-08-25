@@ -5,7 +5,10 @@ import { dayLabel, formatHoursRange, orderRowsMondayFirst } from "@/lib/format-h
 import { prisma } from "@/lib/prisma";
 
 export async function InfoPanel() {
-  const hourRecords = await prisma.openingHour.findMany();
+  // Falls back to an empty schedule if the database is briefly unreachable
+  // rather than crashing the page — see the same pattern in
+  // src/app/layout.tsx.
+  const hourRecords = await prisma.openingHour.findMany().catch(() => []);
   const hours = orderRowsMondayFirst(hourRecords);
 
   return (

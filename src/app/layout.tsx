@@ -57,7 +57,16 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const hourRecords = await prisma.openingHour.findMany();
+  // The root layout wraps every route, including internal ones like
+  // /_not-found that Next.js statically prerenders at *build* time — so a
+  // database hiccup here (e.g. Supabase paused) would otherwise fail the
+  // entire production build, not just a page request. Falling back to an
+  // empty schedule keeps the build (and the JSON-LD, minus opening hours)
+  // resilient to that.
+  const hourRecords = await prisma.openingHour.findMany().catch((err) => {
+    console.error("Kon openingstijden niet ophalen voor JSON-LD:", err);
+    return [];
+  });
 
   const restaurantSchema = {
     "@context": "https://schema.org",

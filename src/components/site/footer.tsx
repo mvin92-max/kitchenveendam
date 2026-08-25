@@ -8,13 +8,18 @@ import { Logo } from "./logo";
 import { NewsletterForm } from "./newsletter-form";
 
 export async function Footer() {
+  // Falls back to an empty schedule if the database is briefly unreachable
+  // (e.g. Supabase paused) rather than crashing every page that renders the
+  // footer — see the same pattern in src/app/layout.tsx.
   const [hourRecords, upcomingExceptions] = await Promise.all([
-    prisma.openingHour.findMany(),
-    prisma.openingHourException.findMany({
-      where: { date: { gte: new Date(new Date().toDateString()) } },
-      orderBy: { date: "asc" },
-      take: 3,
-    }),
+    prisma.openingHour.findMany().catch(() => []),
+    prisma.openingHourException
+      .findMany({
+        where: { date: { gte: new Date(new Date().toDateString()) } },
+        orderBy: { date: "asc" },
+        take: 3,
+      })
+      .catch(() => []),
   ]);
   const hours = orderRowsMondayFirst(hourRecords);
 
