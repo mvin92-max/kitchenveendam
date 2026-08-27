@@ -15,12 +15,12 @@ export function OnderhoudHero() {
     <main className="relative flex min-h-[100svh] w-full flex-col items-center justify-center overflow-hidden bg-[#111111] px-6 py-20 text-center">
       <div className="absolute inset-0">
         <Image
-          src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1920&q=80"
-          alt="Verbouwing van The Kitchen Veendam"
+          src="/pand-gevel.jpg"
+          alt="De gevel van The Kitchen Veendam"
           fill
           priority
           sizes="100vw"
-          className="object-cover object-center"
+          className="object-cover object-[center_25%]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#111111] via-[#111111]/90 to-[#111111]/60" />
         <div className="absolute inset-0 bg-[#111111]/30" />
