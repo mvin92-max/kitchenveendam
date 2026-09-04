@@ -1,10 +1,9 @@
 import { Resend } from "resend";
 
-// No custom domain is verified with Resend yet (avoids touching the DNS that
-// already runs this domain's real mailboxes), so this sends from Resend's
-// own shared domain rather than an @thekitchenveendam.nl address. Swap
-// EMAIL_FROM once a sending domain is verified in the Resend dashboard.
-const FROM_ADDRESS = "The Kitchen Veendam <onboarding@resend.dev>";
+// Sends from a dedicated subdomain (mail.thekitchenveendam.nl) verified with
+// Resend, kept separate from the apex domain's real mailboxes (Microsoft
+// 365) so DKIM/SPF for the two never conflict.
+const FROM_ADDRESS = "The Kitchen Veendam <noreply@mail.thekitchenveendam.nl>";
 
 let client: Resend | null = null;
 
