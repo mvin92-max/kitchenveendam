@@ -8,9 +8,10 @@ import { jobApplicationSchema } from "@/lib/validation/job-application";
 export type SubmitApplicationResult = { success: true } | { success: false; error: string };
 
 /**
- * Public vacancy form: always saved to the database first (so nothing is
- * lost even if the notification email bounces or lands in spam), then
- * emailed to the vacancy inbox. Runs entirely server-side.
+ * Public vacancy form: saved to the database AND emailed to the vacancy
+ * inbox, independently of each other, so a hiccup in one (e.g. the database
+ * being briefly unreachable) doesn't lose an application that the other
+ * channel still captured. Only reports failure to the applicant if both did.
  */
 export async function submitJobApplication(input: unknown): Promise<SubmitApplicationResult> {
   const parsed = jobApplicationSchema.safeParse(input);
@@ -19,17 +20,23 @@ export async function submitJobApplication(input: unknown): Promise<SubmitApplic
   }
   const data = parsed.data;
 
-  await prisma.jobApplication.create({
-    data: {
-      name: data.name,
-      email: data.email,
-      phone: data.phone || null,
-      positions: data.positions,
-      message: data.message || null,
-    },
-  });
+  const savedToDb = await prisma.jobApplication
+    .create({
+      data: {
+        name: data.name,
+        email: data.email,
+        phone: data.phone || null,
+        positions: data.positions,
+        message: data.message || null,
+      },
+    })
+    .then(() => true)
+    .catch((err) => {
+      console.error("Kon sollicitatie niet opslaan in database:", err);
+      return false;
+    });
 
-  await sendEmail({
+  const emailSent = await sendEmail({
     to: VACANCY_EMAIL,
     subject: `Nieuwe sollicitatie: ${data.name}`,
     html: `
@@ -42,6 +49,10 @@ export async function submitJobApplication(input: unknown): Promise<SubmitApplic
       <p>${escapeHtml(data.message || "-").replace(/\n/g, "<br />")}</p>
     `,
   });
+
+  if (!savedToDb && !emailSent) {
+    return { success: false, error: "Versturen is niet gelukt. Probeer het later opnieuw of mail ons rechtstreeks." };
+  }
 
   return { success: true };
 }
